@@ -11,7 +11,7 @@ import {
   SidebarMenuSubItem,
   SidebarMenuSubButton,
   SidebarProvider,
-  SidebarTrigger,
+  //SidebarTrigger,
 } from "@/components/ui/sidebar";
 import {
   Collapsible,
@@ -47,7 +47,10 @@ export default function SidebarLayout({
     <SidebarProvider>
       <Sidebar collapsible="icon">
         <SidebarHeader>
-          <SidebarTrigger className="mb-2" />
+          <div className="text-lg font-bold truncate group-data-[collapsible=icon]:size-2!">Astro-Voyage</div>
+          {
+            //<SidebarTrigger className="mb-2" />
+          }
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu className="p-2">
