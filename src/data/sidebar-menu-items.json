@@ -1,0 +1,53 @@
+[
+  {
+    "title": "ダッシュボード",
+    "href": "/dashboard",
+    "icon": "LayoutDashboard"
+  },
+  {
+    "title": "天文学",
+    "icon": "TelescopeIcon",
+    "submenu": [
+      {
+        "title": "今日の天体写真",
+        "href": "/astronomy/apod"
+      },
+      {
+        "title": "地球近傍天体",
+        "href": "/astronomy/neo"
+      },
+      {
+        "title": "火星探査機データ",
+        "href": "/astronomy/mars-rover"
+      }
+    ]
+  },
+  {
+    "title": "地球科学",
+    "icon": "EarthIcon",
+    "submenu": [
+      {
+        "title": "自然災害データ",
+        "href": "/earth-science/natural-disasters"
+      },
+      {
+        "title": "衛星画像",
+        "href": "/earth-science/satellite-images"
+      }
+    ]
+  },
+  {
+    "title": "太陽物理学",
+    "icon": "SunIcon",
+    "submenu": [
+      {
+        "title": "太陽フレア",
+        "href": "/solar-physics/solar-flares"
+      },
+      {
+        "title": "CME (Coronal Mass Ejection)",
+        "href": "/solar-physics/cme"
+      }
+    ]
+  }
+]
