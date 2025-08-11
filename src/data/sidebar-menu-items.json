@@ -2,11 +2,11 @@
   {
     "title": "ダッシュボード",
     "href": "/dashboard",
-    "icon": "LayoutDashboard"
+    "icon": "LayoutGrid"
   },
   {
     "title": "天文学",
-    "icon": "TelescopeIcon",
+    "icon": "Telescope",
     "submenu": [
       {
         "title": "今日の天体写真",
@@ -24,7 +24,7 @@
   },
   {
     "title": "地球科学",
-    "icon": "EarthIcon",
+    "icon": "Earth",
     "submenu": [
       {
         "title": "自然災害データ",
@@ -38,7 +38,7 @@
   },
   {
     "title": "太陽物理学",
-    "icon": "SunIcon",
+    "icon": "Sun",
     "submenu": [
       {
         "title": "太陽フレア",

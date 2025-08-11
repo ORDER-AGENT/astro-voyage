@@ -47,10 +47,19 @@ export default function SidebarLayout({
     <SidebarProvider>
       <Sidebar collapsible="icon">
         <SidebarHeader>
-          <div className="text-lg font-bold truncate group-data-[collapsible=icon]:size-2!">Astro-Voyage</div>
-          {
-            //<SidebarTrigger className="mb-2" />
-          }
+          <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              className="data-[slot=sidebar-menu-button]:!p-1.5"
+            >
+              <a href="/">
+                <LucideIcons.Rocket className="!size-5" />
+                <span className="text-base font-semibold">Astro-Voyage</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu className="p-2">
