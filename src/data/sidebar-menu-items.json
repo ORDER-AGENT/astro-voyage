@@ -9,7 +9,7 @@
     "icon": "Telescope",
     "submenu": [
       {
-        "title": "今日の天体写真",
+        "title": "天体写真",
         "href": "/astronomy/apod"
       },
       {
