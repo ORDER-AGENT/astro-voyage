@@ -76,7 +76,7 @@ export default function SidebarLayout({
                 // サブメニューあり
                 return (
                   <Collapsible key={item.title} asChild defaultOpen className="group/collapsible">
-                    <SidebarMenuItem>
+                    <SidebarMenuItem className="whitespace-nowrap">
                       <CollapsibleTrigger asChild>
                         <SidebarMenuButton
                           className="cursor-pointer"
@@ -107,7 +107,7 @@ export default function SidebarLayout({
 
               // サブメニューなし: そのままリンク
               return (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.title} className="whitespace-nowrap">
                   <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.title}>
                     <Link href={item.href || "#"} className="flex items-center">
                       {IconComponent && <IconComponent />}

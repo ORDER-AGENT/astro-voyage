@@ -6,8 +6,7 @@ import SimpleCard from '@/components/card/SimpleCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSequentialApodFetcher } from '@/hooks/use-sequential-apod-fetcher';
 
-export default function Home() {
-  // 新しいカスタムフックを使用
+export default function ApodPage() {
   const { data: apodDataList, isLoading, error: apodError } = useSequentialApodFetcher({
     numberOfApodsToFetch: 1, // 1日分の有効なデータを取得
   });
@@ -45,76 +44,6 @@ export default function Home() {
           )
         )}
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-          {/*
-          <StatisticsCard
-            icon={IoHeart}
-            value="178+"
-            label="Favorites"
-            iconBgColor="bg-blue-100"
-            iconColor="text-blue-600"
-          />
-          <StatisticsCard
-            icon={BsChatDotsFill}
-            value="20+"
-            label="Messages"
-            iconBgColor="bg-yellow-100"
-            iconColor="text-yellow-600"
-          />
-          <StatisticsCard
-            icon={IoNotifications}
-            value="190+"
-            label="Notifications"
-            iconBgColor="bg-red-100"
-            iconColor="text-red-600"
-          />
-          <StatisticsCard
-            icon={HiBriefcase}
-            value="12+"
-            label="Jobs"
-            iconBgColor="bg-purple-100"
-            iconColor="text-purple-600"
-          />
-          */}
-        </div>
-
-        {/* Reports and Analytics */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-          {/*
-          <div className="lg:col-span-2">
-            <SalesReportsChart
-            />
-          </div>
-          <div>
-            <AnalyticsDoughnutChart
-            />
-          </div>
-          */}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/*
-          <div className="lg:col-span-2">            
-            <SimpleCard
-              title="最近の注文"
-              dropdownItems={[
-                <DropdownMenuItem key="orders-1">注文オプションX</DropdownMenuItem>,
-                <DropdownMenuItem key="orders-2">注文オプションY</DropdownMenuItem>,
-              ]}
-            >
-              <div className="h-48 flex items-center justify-center border border-dashed rounded mt-4">注文リスト</div>
-            </SimpleCard>
-          </div>
-          <div>
-            <SimpleCard
-              title="売れ筋商品"
-            >
-              <div className="h-48 flex items-center justify-center border border-dashed rounded mt-4">商品リスト</div>
-            </SimpleCard>
-          </div>
-          */}
-        </div>
       </div>
     </ContentLayout>
   );
