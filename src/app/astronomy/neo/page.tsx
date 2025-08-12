@@ -14,6 +14,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { format } from 'date-fns';
+import * as d3 from 'd3';
+import { useRef, useEffect } from 'react';
 
 export default function NeoPage() {
   const today = new Date();
@@ -27,6 +29,74 @@ export default function NeoPage() {
 
   const firstNeoData = neoDataList.length > 0 ? neoDataList[0] : null;
   const remainingNeoData = neoDataList.slice(1);
+
+  const chartRef = useRef(null); // D3グラフ描画用の参照
+
+  useEffect(() => {
+    if (!isLoading && neoDataList.length > 0) {
+      const data = neoDataList.map(neo => ({
+        name: neo.name,
+        diameter: neo.estimated_diameter.kilometers.estimated_diameter_max,
+      }));
+
+      const margin = { top: 20, right: 30, bottom: 90, left: 60 };
+      const width = 800 - margin.left - margin.right;
+      const height = 400 - margin.top - margin.bottom;
+
+      d3.select(chartRef.current).select("svg").remove(); // 既存のSVGをクリア
+
+      const svg = d3.select(chartRef.current)
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+      const x = d3.scaleBand()
+        .range([0, width])
+        .domain(data.map(d => d.name))
+        .padding(0.1);
+
+      const y = d3.scaleLinear()
+        .domain([0, d3.max(data, d => d.diameter) || 0])
+        .range([height, 0]);
+
+      svg.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x))
+        .selectAll("text")
+        .attr("transform", "translate(-10,0)rotate(-45)")
+        .style("text-anchor", "end");
+
+      svg.append("g")
+        .call(d3.axisLeft(y));
+
+      svg.selectAll(".bar")
+        .data(data)
+        .enter()
+        .append("rect")
+        .attr("class", "bar")
+        .attr("x", d => x(d.name)!)
+        .attr("y", d => y(d.diameter))
+        .attr("width", x.bandwidth())
+        .attr("height", d => height - y(d.diameter))
+        .attr("fill", "steelblue");
+
+      // 軸ラベル
+      svg.append("text")
+        .attr("transform", `translate(${width / 2},${height + margin.top + 50})`)
+        .style("text-anchor", "middle")
+        .text("小惑星名");
+
+      svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left)
+        .attr("x", 0 - (height / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("推定最大直径 (km)");
+    }
+  }, [neoDataList, isLoading]);
 
   return (
     <ContentLayout>
@@ -75,6 +145,12 @@ export default function NeoPage() {
                 )}
               </SimpleCard>
             )}
+
+            {/* D3.js グラフ表示エリア */}
+            <div className="mt-4">
+              <h2 className="text-lg font-bold mb-2">小惑星推定最大直径グラフ</h2>
+              <div ref={chartRef} className="bg-white p-4 rounded-lg shadow"></div>
+            </div>
 
             {remainingNeoData.length > 0 && (
               <div className="mt-4">
