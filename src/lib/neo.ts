@@ -53,18 +53,13 @@ export interface NearEarthObjectFeed {
 }
 
 export async function getNeoFeed(startDate: string, endDate: string): Promise<NearEarthObjectFeed> {
-  const API_KEY = process.env.NEXT_PUBLIC_NASA_API_KEY;
-  if (!API_KEY) {
-    throw new Error("NEXT_PUBLIC_NASA_API_KEY is not defined in .env.local");
-  }
-
-  const url = `https://api.nasa.gov/neo/rest/v1/feed?start_date=${startDate}&end_date=${endDate}&api_key=${API_KEY}`;
+  const url = `/api/neo?start_date=${startDate}&end_date=${endDate}`;
 
   const res = await fetch(url);
   if (!res.ok) {
     const errorData = await res.json();
     const error = new Error(errorData.error_message || "Failed to fetch NEO feed");
-    (error as any).code = res.status; // エラーレスポンスにcodeがない場合を考慮
+    (error as any).code = res.status;
     throw error;
   }
   return res.json();
