@@ -14,8 +14,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { format } from 'date-fns';
-import * as d3 from 'd3';
-import { useRef, useEffect } from 'react';
+import * as d3 from 'd3'; // D3.jsライブラリをインポート
+import { useRef, useEffect } from 'react'; // Reactのフックをインポート
 
 export default function NeoPage() {
   const today = new Date();
@@ -30,21 +30,26 @@ export default function NeoPage() {
   const firstNeoData = neoDataList.length > 0 ? neoDataList[0] : null;
   const remainingNeoData = neoDataList.slice(1);
 
-  const chartRef = useRef(null); // D3グラフ描画用の参照
+  const chartRef = useRef(null); // D3グラフ描画用のDOM要素への参照を作成
 
   useEffect(() => {
+    // データがロードされ、かつデータが存在する場合のみグラフを描画
     if (!isLoading && neoDataList.length > 0) {
+      // グラフ描画用にデータ（小惑星名と推定最大直径）を整形
       const data = neoDataList.map(neo => ({
         name: neo.name,
         diameter: neo.estimated_diameter.kilometers.estimated_diameter_max,
       }));
 
+      // グラフの余白とサイズを設定
       const margin = { top: 20, right: 30, bottom: 90, left: 60 };
       const width = 800 - margin.left - margin.right;
       const height = 400 - margin.top - margin.bottom;
 
-      d3.select(chartRef.current).select("svg").remove(); // 既存のSVGをクリア
+      // 既存のSVG要素があれば削除し、新しいグラフを描画するために準備
+      d3.select(chartRef.current).select("svg").remove();
 
+      // SVG要素を作成し、グラフを描画するグループ要素を配置
       const svg = d3.select(chartRef.current)
         .append("svg")
         .attr("width", width + margin.left + margin.right)
@@ -52,15 +57,18 @@ export default function NeoPage() {
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
+      // X軸のスケール（小惑星名）を設定
       const x = d3.scaleBand()
         .range([0, width])
         .domain(data.map(d => d.name))
         .padding(0.1);
 
+      // Y軸のスケール（推定最大直径）を設定
       const y = d3.scaleLinear()
         .domain([0, d3.max(data, d => d.diameter) || 0])
         .range([height, 0]);
 
+      // X軸を描画し、ラベルを傾けて表示
       svg.append("g")
         .attr("transform", `translate(0,${height})`)
         .call(d3.axisBottom(x))
@@ -68,9 +76,11 @@ export default function NeoPage() {
         .attr("transform", "translate(-10,0)rotate(-45)")
         .style("text-anchor", "end");
 
+      // Y軸を描画
       svg.append("g")
         .call(d3.axisLeft(y));
 
+      // 棒グラフを描画
       svg.selectAll(".bar")
         .data(data)
         .enter()
@@ -82,11 +92,11 @@ export default function NeoPage() {
         .attr("height", d => height - y(d.diameter))
         .attr("fill", "steelblue");
 
-      // 軸ラベル
+      // 軸ラベルの追加
       svg.append("text")
         .attr("transform", `translate(${width / 2},${height + margin.top + 50})`)
         .style("text-anchor", "middle")
-        .text("小惑星名");
+        .text("小惑星名"); // X軸ラベル
 
       svg.append("text")
         .attr("transform", "rotate(-90)")
@@ -94,7 +104,7 @@ export default function NeoPage() {
         .attr("x", 0 - (height / 2))
         .attr("dy", "1em")
         .style("text-anchor", "middle")
-        .text("推定最大直径 (km)");
+        .text("推定最大直径 (km)"); // Y軸ラベル
     }
   }, [neoDataList, isLoading]);
 
