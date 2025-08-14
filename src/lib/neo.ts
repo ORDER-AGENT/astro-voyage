@@ -1,4 +1,35 @@
 // astro-voyage/src/lib/neo.ts
+export interface OrbitalElement {
+  label: string;
+  name: string;
+  units: string | null;
+  value: string;
+  sigma: string;
+  title: string;
+}
+
+export interface OrbitalData {
+  first_obs: string;
+  last_obs: string;
+  data_arc: string;
+  n_obs_used: number;
+  rms: string;
+  soln_date: string;
+  pe_used: string;
+  sb_used: string;
+  n_del_obs_used: number;
+  n_dop_obs_used: number;
+  comment: string | null;
+  equinox: string;
+  condition_code: string;
+  t_jup: string;
+  cov_epoch: string;
+  epoch: string;
+  moid: string;
+  moid_jup: string;
+  elements: OrbitalElement[];
+}
+
 export interface NearEarthObject {
   links: {
     self: string;
@@ -34,9 +65,7 @@ export interface NearEarthObject {
     orbiting_body: string;
     // ... 他のプロパティは必要に応じて追加
   }>;
-  orbital_data: {
-    // ... 必要に応じて追加
-  };
+  orbital_data: OrbitalData; // 型をOrbitalDataに変更
   is_sentry_object: boolean;
 }
 

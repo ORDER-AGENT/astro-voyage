@@ -5,6 +5,7 @@ import ContentLayout from '@/components/ContentLayout';
 import SimpleCard from '@/components/card/SimpleCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useNeoFetcher } from '@/hooks/use-neo-fetcher';
+import { useOrbitalDataFetcher } from '@/hooks/use-orbital-data-fetcher'; // 追加
 import {
   Table,
   TableBody,
@@ -28,6 +29,16 @@ export default function NeoPage() {
   });
 
   const firstNeoData = neoDataList.length > 0 ? neoDataList[0] : null;
+
+  // 最初のNEOのIDを使用して軌道データをフェッチ
+  const {
+    data: orbitalData,
+    isLoading: orbitalIsLoading,
+    error: orbitalError,
+  } = useOrbitalDataFetcher({
+    neoId: firstNeoData?.neo_reference_id || '',
+  });
+
   const remainingNeoData = neoDataList.slice(1);
 
   const chartRef = useRef(null); // D3グラフ描画用のDOM要素への参照を作成
@@ -153,6 +164,43 @@ export default function NeoPage() {
                     ({firstNeoData.close_approach_data[0].orbiting_body}の周り)
                   </p>
                 )}
+
+                {/* 軌道データ表示エリア */}
+                <div className="mt-4">
+                  <h3 className="text-md font-bold mb-2">軌道データ</h3> {/* h2からh3に変更 */}
+                  {orbitalIsLoading ? (
+                    <Skeleton className="w-full h-48 mt-4" />
+                  ) : orbitalError ? (
+                    <div className="p-4 text-red-500">軌道データの読み込み中にエラーが発生しました: {orbitalError.message}</div>
+                  ) : orbitalData ? (
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>要素名</TableHead>
+                            <TableHead>値</TableHead>
+                            <TableHead>単位</TableHead>
+                            <TableHead>説明</TableHead>
+                            <TableHead>シグマ</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {orbitalData.elements.map((element) => (
+                            <TableRow key={element.name}>
+                              <TableCell className="font-medium">{element.title}</TableCell>
+                              <TableCell>{element.value}</TableCell>
+                              <TableCell>{element.units || 'N/A'}</TableCell>
+                              <TableCell>{element.label}</TableCell>
+                              <TableCell>{element.sigma}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <div className="p-4 text-gray-500">軌道データがありません。</div>
+                  )}
+                </div>
               </SimpleCard>
             )}
 
