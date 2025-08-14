@@ -17,6 +17,7 @@ import {
 import { format } from 'date-fns';
 import * as d3 from 'd3'; // D3.jsライブラリをインポート
 import { useRef, useEffect } from 'react'; // Reactのフックをインポート
+import OrbitalViewer from '@/components/OrbitalViewer'; // OrbitalViewerコンポーネントをインポート
 
 export default function NeoPage() {
   const today = new Date();
@@ -201,64 +202,78 @@ export default function NeoPage() {
                     <div className="p-4 text-gray-500">軌道データがありません。</div>
                   )}
                 </div>
-              </SimpleCard>
-            )}
 
-            {/* D3.js グラフ表示エリア */}
-            <div className="mt-4">
-              <h2 className="text-lg font-bold mb-2">小惑星推定最大直径グラフ</h2>
-              <div ref={chartRef} className="bg-white p-4 rounded-lg shadow"></div>
-            </div>
-
-            {remainingNeoData.length > 0 && (
-              <div className="mt-4">
-                <h2 className="text-lg font-bold mb-2">その他の小惑星</h2>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>名前</TableHead>
-                        <TableHead>危険性</TableHead>
-                        <TableHead>最小直径 (km)</TableHead>
-                        <TableHead>最大直径 (km)</TableHead>
-                        <TableHead>最接近日時</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {remainingNeoData.map((neo) => (
-                        <TableRow key={neo.id}>
-                          <TableCell className="font-medium">{neo.name}</TableCell>
-                          <TableCell>
-                            {neo.is_potentially_hazardous_asteroid ? '危険' : '安全'}
-                          </TableCell>
-                          <TableCell>
-                            {neo.estimated_diameter.kilometers.estimated_diameter_min.toFixed(3)}
-                          </TableCell>
-                          <TableCell>
-                            {neo.estimated_diameter.kilometers.estimated_diameter_max.toFixed(3)}
-                          </TableCell>
-                          <TableCell>
-                            {neo.close_approach_data.length > 0
-                              ? format(
-                                  new Date(neo.close_approach_data[0].close_approach_date_full),
-                                  'yyyy-MM-dd HH:mm:ss'
-                                )
-                              : 'N/A'}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                {/* 軌道ビューアの追加 */}
+                <div className="mt-4">
+                  <h2 className="text-lg font-bold mb-2">軌道ビューア</h2>
+                  {orbitalIsLoading ? (
+                    <Skeleton className="w-full h-96 mt-4" />
+                  ) : orbitalError ? (
+                    <div className="p-4 text-red-500">軌道ビューアの読み込み中にエラーが発生しました: {orbitalError.message}</div>
+                  ) : orbitalData ? (
+                    <OrbitalViewer orbitalData={orbitalData} />
+                  ) : (
+                    <div className="p-4 text-gray-500">軌道データを表示できません。</div>
+                  )}
                 </div>
-              </div>
-            )}
 
-            {!firstNeoData && !neoError && (
-              <div className="p-4 text-gray-500">表示できるNEOデータがありません。</div>
-            )}
+                {/* D3.js グラフ表示エリア */}
+                <div className="mt-4">
+                  <h2 className="text-lg font-bold mb-2">小惑星推定最大直径グラフ</h2>
+                  <div ref={chartRef} className="bg-white p-4 rounded-lg shadow"></div>
+                </div>
 
-            {neoError && (
-              <div className="p-4 text-red-500">NEOデータの読み込み中にエラーが発生しました: {neoError.message}</div>
+                {remainingNeoData.length > 0 && (
+                  <div className="mt-4">
+                    <h2 className="text-lg font-bold mb-2">その他の小惑星</h2>
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>名前</TableHead>
+                            <TableHead>危険性</TableHead>
+                            <TableHead>最小直径 (km)</TableHead>
+                            <TableHead>最大直径 (km)</TableHead>
+                            <TableHead>最接近日時</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {remainingNeoData.map((neo) => (
+                            <TableRow key={neo.id}>
+                              <TableCell className="font-medium">{neo.name}</TableCell>
+                              <TableCell>
+                                {neo.is_potentially_hazardous_asteroid ? '危険' : '安全'}
+                              </TableCell>
+                              <TableCell>
+                                {neo.estimated_diameter.kilometers.estimated_diameter_min.toFixed(3)}
+                              </TableCell>
+                              <TableCell>
+                                {neo.estimated_diameter.kilometers.estimated_diameter_max.toFixed(3)}
+                              </TableCell>
+                              <TableCell>
+                                {neo.close_approach_data.length > 0
+                                  ? format(
+                                      new Date(neo.close_approach_data[0].close_approach_date_full),
+                                      'yyyy-MM-dd HH:mm:ss'
+                                    )
+                                  : 'N/A'}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                )}
+
+                {!firstNeoData && !neoError && (
+                  <div className="p-4 text-gray-500">表示できるNEOデータがありません。</div>
+                )}
+
+                {neoError && (
+                  <div className="p-4 text-red-500">NEOデータの読み込み中にエラーが発生しました: {neoError.message}</div>
+                )}
+              </SimpleCard>
             )}
           </>
         )}
