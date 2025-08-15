@@ -5,7 +5,8 @@ import ContentLayout from '@/components/ContentLayout';
 import SimpleCard from '@/components/card/SimpleCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useNeoFetcher } from '@/hooks/use-neo-fetcher';
-import { useOrbitalDataFetcher } from '@/hooks/use-orbital-data-fetcher'; // 追加
+import { useOrbitalDataFetcher } from '@/hooks/use-orbital-data-fetcher';
+import { useHorizonsOrbitalDataFetcher } from '@/hooks/use-horizons-orbital-data-fetcher';
 import {
   Table,
   TableBody,
@@ -15,20 +16,26 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { format } from 'date-fns';
-import * as d3 from 'd3'; // D3.jsライブラリをインポート
-import { useRef, useEffect } from 'react'; // Reactのフックをインポート
-import OrbitalViewer from '@/components/OrbitalViewer'; // OrbitalViewerコンポーネントをインポート
+import * as d3 from 'd3';
+import { useRef, useEffect, useState } from 'react';
+import OrbitalViewer from '@/components/OrbitalViewer';
+import { addDays } from 'date-fns';
+import { HorizonsOrbitalElements } from '@/lib/horizons';
 
+// NEO (Near Earth Object) ページコンポーネント
 export default function NeoPage() {
+  // 現在の日付と翌日の日付をY-M-D形式で取得
   const today = new Date();
-  const startDate = today;
-  const endDate = today;
+  const startDate = format(today, 'yyyy-MM-dd');
+  const endDate = format(addDays(today, 1), 'yyyy-MM-dd');
 
+  // NEOデータをフェッチ
   const { data: neoDataList, isLoading, error: neoError } = useNeoFetcher({
-    startDate,
-    endDate,
+    startDate: new Date(startDate),
+    endDate: new Date(endDate),
   });
 
+  // 取得したNEOデータのうち最初のものを取得
   const firstNeoData = neoDataList.length > 0 ? neoDataList[0] : null;
 
   // 最初のNEOのIDを使用して軌道データをフェッチ
@@ -40,59 +47,153 @@ export default function NeoPage() {
     neoId: firstNeoData?.neo_reference_id || '',
   });
 
+  // 太陽系惑星のIDと名前の定義
+  const planetIds = [
+    { id: '199', name: '水星' },    // Mercury
+    { id: '399', name: '地球' },    // Earth
+    { id: '299', name: '金星' },    // Venus
+    { id: '499', name: '火星' },    // Mars
+/*
+    { id: '599', name: '木星' },    // Jupiter
+    { id: '699', name: '土星' },    // Saturn
+    { id: '799', name: '天王星' },  // Uranus
+    { id: '899', name: '海王星' },  // Neptune
+     */
+  ];
+
+  // PlanetDisplayData インターフェース: OrbitalViewer に渡すデータの型定義
+  interface PlanetDisplayData {
+    id: string;
+    name: string;
+    elements: HorizonsOrbitalElements[] | null;
+    isLoading: boolean;
+    error: Error | null;
+  }
+
+  // 惑星の軌道データ状態
+  const [planetOrbitalData, setPlanetOrbitalData] = useState<PlanetDisplayData[]>(
+    planetIds.map(planet => ({ id: planet.id, name: planet.name, elements: null, isLoading: false, error: null }))
+  );
+  // 現在フェッチ中の惑星のインデックス
+  const [currentPlanetIndex, setCurrentPlanetIndex] = useState(0);
+  // 全ての惑星のフェッチが完了したかを示すフラグ
+  const fetchCompletedRef = useRef(false);
+
+  // 現在の惑星データとHorizons APIからの軌道データフェッチ
+  const currentPlanet = planetIds[currentPlanetIndex];
+  const { data: fetchedPlanetData, isLoading: isPlanetLoading, error: planetError } = useHorizonsOrbitalDataFetcher({
+    bodyId: currentPlanet?.id || '',
+    startDate,
+    endDate,
+    enabled: !!currentPlanet && currentPlanetIndex < planetIds.length && !fetchCompletedRef.current,
+  });
+
+  // 惑星軌道データフェッチ完了時の処理
+  useEffect(() => {
+    if (currentPlanet && !isPlanetLoading && fetchedPlanetData) {
+      setPlanetOrbitalData(prevData => {
+        const newData = [...prevData];
+        newData[currentPlanetIndex] = {
+          id: currentPlanet.id,
+          name: currentPlanet.name,
+          elements: fetchedPlanetData || null,
+          isLoading: false,
+          error: planetError,
+        };
+        return newData;
+      });
+
+      if (currentPlanetIndex < planetIds.length - 1) {
+        setCurrentPlanetIndex(prevIndex => prevIndex + 1);
+      } else {
+        fetchCompletedRef.current = true; // すべての惑星のフェッチが完了したらフラグを立てる
+      }
+    }
+  }, [fetchedPlanetData, isPlanetLoading, planetError, planetIds, currentPlanet, currentPlanetIndex]);
+
+  // 最初のNEO以外のデータ
   const remainingNeoData = neoDataList.slice(1);
 
-  const chartRef = useRef(null); // D3グラフ描画用のDOM要素への参照を作成
+  // D3グラフ描画用のDOM要素への参照とグラフ幅の状態
+  const chartRef = useRef(null);
+  const [chartWidth, setChartWidth] = useState(0);
 
+  // コンテナ幅に追従させる（サイドバーの開閉やレイアウト変化も検知）
   useEffect(() => {
-    // データがロードされ、かつデータが存在する場合のみグラフを描画
-    if (!isLoading && neoDataList.length > 0) {
-      // グラフ描画用にデータ（小惑星名と推定最大直径）を整形
+    const el = chartRef.current as HTMLDivElement | null;
+    if (!el) return;
+
+    const calc = () => {
+      const styles = window.getComputedStyle(el);
+      const pl = parseFloat(styles.paddingLeft) || 0;
+      const pr = parseFloat(styles.paddingRight) || 0;
+      const contentWidth = el.clientWidth - pl - pr; // パディングを除いた実効幅
+      setChartWidth(Math.max(0, contentWidth));
+    };
+
+    const ro = new ResizeObserver(() => {
+      calc();
+    });
+    ro.observe(el);
+
+    // 初期レイアウト確定後に一度計測
+    const raf = requestAnimationFrame(calc);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+    };
+  }, [isLoading, firstNeoData]);
+
+  // NEOデータがロードされた後にD3グラフを描画
+  useEffect(() => {
+    if (!isLoading && neoDataList.length > 0 && chartWidth > 0) {
       const data = neoDataList.map(neo => ({
         name: neo.name,
         diameter: neo.estimated_diameter.kilometers.estimated_diameter_max,
       }));
-
-      // グラフの余白とサイズを設定
+  
       const margin = { top: 20, right: 30, bottom: 90, left: 60 };
-      const width = 800 - margin.left - margin.right;
+      const width = Math.max(0, chartWidth - margin.left - margin.right);
       const height = 400 - margin.top - margin.bottom;
-
-      // 既存のSVG要素があれば削除し、新しいグラフを描画するために準備
+  
+      // 既存のSVG要素を削除
       d3.select(chartRef.current).select("svg").remove();
-
-      // SVG要素を作成し、グラフを描画するグループ要素を配置
+  
+      // SVG要素とグラフ描画グループを作成
       const svg = d3.select(chartRef.current)
         .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
+        .attr("viewBox", `0 0 ${chartWidth} ${height + margin.top + margin.bottom}`)
+        .attr("width", "100%")
+        .attr("height", "100%")
+        .style("display", "block")
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
-
-      // X軸のスケール（小惑星名）を設定
+  
+      // X軸のスケール設定（小惑星名）
       const x = d3.scaleBand()
         .range([0, width])
         .domain(data.map(d => d.name))
         .padding(0.1);
-
-      // Y軸のスケール（推定最大直径）を設定
+  
+      // Y軸のスケール設定（推定最大直径）
       const y = d3.scaleLinear()
         .domain([0, d3.max(data, d => d.diameter) || 0])
         .range([height, 0]);
-
-      // X軸を描画し、ラベルを傾けて表示
+  
+      // X軸描画とラベルの傾け表示
       svg.append("g")
         .attr("transform", `translate(0,${height})`)
         .call(d3.axisBottom(x))
         .selectAll("text")
         .attr("transform", "translate(-10,0)rotate(-45)")
         .style("text-anchor", "end");
-
-      // Y軸を描画
+  
+      // Y軸描画
       svg.append("g")
         .call(d3.axisLeft(y));
-
-      // 棒グラフを描画
+  
+      // 棒グラフ描画
       svg.selectAll(".bar")
         .data(data)
         .enter()
@@ -103,13 +204,14 @@ export default function NeoPage() {
         .attr("width", x.bandwidth())
         .attr("height", d => height - y(d.diameter))
         .attr("fill", "steelblue");
-
-      // 軸ラベルの追加
+  
+      // 軸ラベル追加
       svg.append("text")
         .attr("transform", `translate(${width / 2},${height + margin.top + 50})`)
         .style("text-anchor", "middle")
         .text("小惑星名"); // X軸ラベル
-
+  
+      // Y軸ラベル
       svg.append("text")
         .attr("transform", "rotate(-90)")
         .attr("y", 0 - margin.left)
@@ -118,11 +220,12 @@ export default function NeoPage() {
         .style("text-anchor", "middle")
         .text("推定最大直径 (km)"); // Y軸ラベル
     }
-  }, [neoDataList, isLoading]);
+  }, [neoDataList, isLoading, chartWidth]);
 
   return (
     <ContentLayout>
       <div className="p-1 md:p-2 lg:p-4">
+        {/* ローディング中のスケルトン表示 */}
         {isLoading ? (
           <SimpleCard title="">
             <Skeleton className="w-full h-48 mt-4" />
@@ -131,6 +234,7 @@ export default function NeoPage() {
           </SimpleCard>
         ) : (
           <>
+            {/* 最初のNEOデータの表示 */}
             {firstNeoData && (
               <SimpleCard
                 title={`小惑星名: ${firstNeoData.name}`}
@@ -168,7 +272,7 @@ export default function NeoPage() {
 
                 {/* 軌道データ表示エリア */}
                 <div className="mt-4">
-                  <h3 className="text-md font-bold mb-2">軌道データ</h3> {/* h2からh3に変更 */}
+                  <h3 className="text-md font-bold mb-2">軌道データ</h3>
                   {orbitalIsLoading ? (
                     <Skeleton className="w-full h-48 mt-4" />
                   ) : orbitalError ? (
@@ -203,15 +307,25 @@ export default function NeoPage() {
                   )}
                 </div>
 
-                {/* 軌道ビューアの追加 */}
+                {/* 軌道ビューワーの表示 */}
                 <div className="mt-4">
-                  <h2 className="text-lg font-bold mb-2">軌道ビューア</h2>
-                  {orbitalIsLoading ? (
+                  <h2 className="text-lg font-bold mb-2">軌道ビューワー</h2>
+                  {orbitalIsLoading || planetOrbitalData.some(p => p.isLoading) ? (
                     <Skeleton className="w-full h-96 mt-4" />
-                  ) : orbitalError ? (
-                    <div className="p-4 text-red-500">軌道ビューアの読み込み中にエラーが発生しました: {orbitalError.message}</div>
-                  ) : orbitalData ? (
-                    <OrbitalViewer orbitalData={orbitalData} />
+                  ) : orbitalError || planetOrbitalData.some(p => p.error) ? (
+                    <div className="p-4 text-red-500">
+                      軌道ビューワーの読み込み中にエラーが発生しました:{' '}
+                      {orbitalError?.message || planetOrbitalData.map(p => p.error?.message).filter(Boolean).join(', ')}
+                    </div>
+                  ) : orbitalData || planetOrbitalData.every(p => p.elements && p.elements.length > 0) ? (
+                    <OrbitalViewer
+                      orbitalData={{ name: firstNeoData.name, data: orbitalData }}
+                      planetOrbitalData={planetOrbitalData.map(p => ({
+                        id: p.id,
+                        name: p.name,
+                        elements: p.elements || null
+                      }))}
+                    />
                   ) : (
                     <div className="p-4 text-gray-500">軌道データを表示できません。</div>
                   )}
@@ -220,9 +334,49 @@ export default function NeoPage() {
                 {/* D3.js グラフ表示エリア */}
                 <div className="mt-4">
                   <h2 className="text-lg font-bold mb-2">小惑星推定最大直径グラフ</h2>
-                  <div ref={chartRef} className="bg-white p-4 rounded-lg shadow"></div>
+                  <div ref={chartRef} className="bg-white p-4 rounded-lg shadow w-full min-w-0 overflow-x-hidden"></div>
                 </div>
 
+                {/* 惑星軌道データ表示エリア (現在コメントアウト中)
+                {planetOrbitalData.map((planet) => (
+                  <React.Fragment key={planet.id}>
+                    {planet.data && planet.data.length > 0 ? (
+                      <div className="mt-4">
+                        <h3 className="text-md font-bold mb-2">{planet.name}の軌道データ</h3>
+                        <div className="overflow-x-auto">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>要素名</TableHead>
+                                <TableHead>値</TableHead>
+                                <TableHead>単位</TableHead>
+                                <TableHead>説明</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {formatHorizonsElementsForTable(planet.data[0]).map((element) => (
+                                <TableRow key={element.name}>
+                                  <TableCell className="font-medium">{element.title}</TableCell>
+                                  <TableCell>{element.value}</TableCell>
+                                  <TableCell>{element.units || 'N/A'}</TableCell>
+                                  <TableCell>{element.label || 'N/A'}</TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-4 p-4 text-gray-500">
+                        {planet.name}の軌道データがありません。
+                        {planet.isLoading && 'データを読み込み中...'}
+                        {planet.error && `エラーが発生しました: ${planet.error.message}`}
+                      </div>
+                    )}
+                  </React.Fragment>
+                ))}*/}
+
+                {/* その他のNEOデータの表示 */}
                 {remainingNeoData.length > 0 && (
                   <div className="mt-4">
                     <h2 className="text-lg font-bold mb-2">その他の小惑星</h2>
@@ -266,6 +420,7 @@ export default function NeoPage() {
                   </div>
                 )}
 
+                {/* NEOデータが存在しない場合、またはエラーの場合のメッセージ */}
                 {!firstNeoData && !neoError && (
                   <div className="p-4 text-gray-500">表示できるNEOデータがありません。</div>
                 )}

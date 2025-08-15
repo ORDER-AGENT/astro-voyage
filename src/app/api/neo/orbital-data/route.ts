@@ -13,6 +13,8 @@ export async function GET(request: Request) {
 
   const url = `https://ssd-api.jpl.nasa.gov/sbdb.api?sstr=${neoId}`;
 
+  console.log('NeoOrbitalData API Request URL (Before Fetch):', url);
+
   try {
     const res = await fetch(url);
 

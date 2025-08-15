@@ -20,7 +20,7 @@ export default function ContentLayout({
   const shouldShowHeader = headerLeftContent || headerRightContent;
 
   return (
-    <div className="flex-1 flex flex-col p-4 overflow-y-auto bg-[#f5f7fd]">
+    <div className="flex-1 flex flex-col p-4 overflow-y-auto bg-[#f5f7fd] min-w-0">
       {shouldShowHeader && ( // 条件付きでヘッダーを表示
         <div className="flex items-center justify-between mb-6">
           <div className="flex-1 flex justify-start items-center"> {/* 左寄せのコンテナ */}

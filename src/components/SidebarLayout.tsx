@@ -11,6 +11,7 @@ import {
   SidebarMenuSubItem,
   SidebarMenuSubButton,
   SidebarProvider,
+  SidebarInset,
   //SidebarTrigger,
 } from "@/components/ui/sidebar";
 import {
@@ -120,7 +121,9 @@ export default function SidebarLayout({
           </SidebarMenu>
         </SidebarContent>
       </Sidebar>
-      {children}
+      <SidebarInset className="min-w-0">
+        {children}
+      </SidebarInset>
     </SidebarProvider>
   );
 }

@@ -1,4 +1,3 @@
-// astro-voyage/src/lib/neo.ts
 export interface OrbitalElement {
   label: string;
   name: string;
@@ -65,7 +64,7 @@ export interface NearEarthObject {
     orbiting_body: string;
     // ... 他のプロパティは必要に応じて追加
   }>;
-  orbital_data: OrbitalData; // 型をOrbitalDataに変更
+  //orbital_data: OrbitalData;
   is_sentry_object: boolean;
 }
 

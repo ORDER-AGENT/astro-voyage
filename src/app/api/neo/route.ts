@@ -22,6 +22,8 @@ export async function GET(request: Request) {
 
   const url = `https://api.nasa.gov/neo/rest/v1/feed?start_date=${startDate}&end_date=${endDate}&api_key=${API_KEY}`;
 
+  console.log('NeoFeed API Request URL (Before Fetch):', url);
+
   try {
     const res = await fetch(url);
 
