@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { HorizonsOrbitalElements } from '@/lib/horizons';
+import { FetchError } from '@/lib/utils';
 
 // useHorizonsOrbitalDataFetcherフックのオプションを定義するインターフェース。
 interface UseHorizonsOrbitalDataFetcherOptions {
@@ -18,7 +19,7 @@ interface UseHorizonsOrbitalDataFetcherResult {
   // 取得した軌道要素データの配列、またはデータがない場合はnull。
   data: HorizonsOrbitalElements[] | null;
   isLoading: boolean;
-  error: Error | null;
+  error: FetchError | null;
 }
 
 // Horizons APIから指定された天体の軌道要素データを取得するためのカスタムフック。
@@ -29,7 +30,7 @@ export function useHorizonsOrbitalDataFetcher({
   startDate,
   endDate,
 }: UseHorizonsOrbitalDataFetcherOptions): UseHorizonsOrbitalDataFetcherResult {
-  const { data, isLoading, isError, error } = useQuery<HorizonsOrbitalElements[], Error>(
+  const { data, isLoading, isError, error } = useQuery<HorizonsOrbitalElements[], FetchError>(
     {
       queryKey: ['horizons-orbital-data', bodyId, startDate, endDate],
       queryFn: async () => {
@@ -43,8 +44,8 @@ export function useHorizonsOrbitalDataFetcher({
 
         if (!res.ok) {
           const errorData = await res.json();
-          const fetchError = new Error(errorData.error_message || `Failed to fetch orbital data for body ${bodyId}`);
-          (fetchError as any).code = res.status;
+          const fetchError: FetchError = new Error(errorData.error_message || `Failed to fetch orbital data for body ${bodyId}`);
+          fetchError.code = res.status;
           throw fetchError;
         }
         const rawData = await res.json();

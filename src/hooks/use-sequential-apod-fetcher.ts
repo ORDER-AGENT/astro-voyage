@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { APOD, getAPOD } from '@/lib/apod';
 import { format, subDays } from 'date-fns';
 import { useState, useEffect } from 'react';
+import { FetchError } from '@/lib/utils'; // 追加
 
 interface UseSequentialApodFetcherOptions {
   startDate?: Date; // 開始日 (デフォルトは今日)
@@ -13,7 +14,7 @@ interface UseSequentialApodFetcherOptions {
 interface UseSequentialApodFetcherResult {
   data: APOD[]; // 取得したAPODデータの配列
   isLoading: boolean;
-  error: Error | null;
+  error: FetchError | null; // 型をFetchError | nullに変更
 }
 
 export function useSequentialApodFetcher({
@@ -28,7 +29,7 @@ export function useSequentialApodFetcher({
 
   const formattedDate = format(currentAttemptDate, 'yyyy-MM-dd');
 
-  const { data, isLoading, isError, error } = useQuery<APOD, Error>({
+  const { data, isLoading, isError, error } = useQuery<APOD, FetchError>({
     queryKey: ['apod', formattedDate],
     queryFn: () => getAPOD(formattedDate),
     enabled: successfulDataList.length < numberOfApodsToFetch && attemptsCount <= maxDaysToLookBack, // 必要な数が揃うまで、かつ試行回数が制限内であればフェッチ

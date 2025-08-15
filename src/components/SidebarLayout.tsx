@@ -54,10 +54,10 @@ export default function SidebarLayout({
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="/">
+              <Link href="/">
                 <LucideIcons.Rocket className="!size-5" />
                 <span className="text-base font-semibold">Astro-Voyage</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

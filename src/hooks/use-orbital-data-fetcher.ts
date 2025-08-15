@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { OrbitalData } from '@/lib/neo';
+import { FetchError } from '@/lib/utils';
 
 interface UseOrbitalDataFetcherOptions {
   neoId: string;
@@ -22,8 +23,8 @@ export function useOrbitalDataFetcher({
 
       if (!res.ok) {
         const errorData = await res.json();
-        const fetchError = new Error(errorData.error_message || 'Failed to fetch orbital data');
-        (fetchError as any).code = res.status;
+        const fetchError: FetchError = new Error(errorData.error_message || 'Failed to fetch orbital data');
+        fetchError.code = res.status;
         throw fetchError;
       }
       return res.json();

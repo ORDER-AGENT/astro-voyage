@@ -48,9 +48,9 @@ export async function GET(request: Request) {
         const errorData = JSON.parse(responseText);
         console.error('Horizons APIがエラーで応答しました (Non-OK status):', errorData);
         return NextResponse.json(errorData, { status: res.status });
-      } catch (parseError) {
+      } catch (parseError: unknown) {
         // エラーレスポンスがJSON形式でない場合
-        console.error('Horizons APIが非JSONエラーで応答しました:', responseText);
+        console.error('Horizons APIが非JSONエラーで応答しました:', (parseError instanceof Error) ? parseError.message : String(parseError), responseText);
         return NextResponse.json(
           { error_message: `Horizons APIエラー: ${res.status} ${res.statusText} - ${responseText.substring(0, 200)}...` },
           { status: res.status }
@@ -58,25 +58,25 @@ export async function GET(request: Request) {
       }
     }
 
-    let data: any;
+    let data: unknown;
     try {
       // 成功レスポンスをJSONとしてパース
       data = JSON.parse(responseText);
-    } catch (parseError) {
+    } catch (parseError: unknown) {
       // JSONパースに失敗した場合
       console.error('Horizons APIレスポンスをJSONとしてパースできませんでした:', parseError, responseText);
       return NextResponse.json(
-        { error_message: `Horizons APIレスポンスをJSONとしてパースできませんでした: ${parseError}` },
+        { error_message: `Horizons APIレスポンスをJSONとしてパースできませんでした: ${(parseError instanceof Error) ? parseError.message : String(parseError)}` },
         { status: 500 }
       );
     }
     
     // 結果テキスト（軌道要素データブロック）を抽出
-    const resultText = data.result;
+    const resultText = (typeof data === 'object' && data !== null && 'result' in data) ? (data as { result: string }).result : undefined;
     if (!resultText) {
       // resultがない場合、Horizons APIのエラーメッセージがあればそれを返す
-      if (data.message) {
-        return NextResponse.json({ error_message: `Horizons APIエラー: ${data.message}` }, { status: 400 });
+      if (typeof data === 'object' && data !== null && 'message' in data && typeof (data as { message: string }).message === 'string') {
+        return NextResponse.json({ error_message: `Horizons APIエラー: ${(data as { message: string }).message}` }, { status: 400 });
       }
       // それ以外の場合は一般的なエラーメッセージ
       return NextResponse.json(
@@ -116,7 +116,7 @@ export async function GET(request: Request) {
     const elementsRawDataBlock = lines.slice(soiStart + 1, soiEnd).join('\n');
 
     // パースされた軌道要素を格納する配列
-    const parsedElements: any[] = [];
+    const parsedElements: { [key: string]: number | string }[] = [];
     // JDTDB (ユリウス日) で始まる行でデータブロックを個別の要素ブロックに分割
     const elementBlocks = elementsRawDataBlock.split(/(?=^\d{7}\.\d+ = A\.D\.)/gm);
 
@@ -191,11 +191,11 @@ export async function GET(request: Request) {
     
     // パースされた軌道要素データをJSONレスポンスとして返す
     return NextResponse.json(parsedElements);
-  } catch (error: any) {
+  } catch (error: unknown) {
     // 予期せぬエラーが発生した場合の処理
     console.error('Horizons APIルートで予期せぬエラーが発生しました:', error);
     return NextResponse.json(
-      { error_message: error.message || '内部サーバーエラーが発生しました。' },
+      { error_message: (error instanceof Error) ? error.message : '内部サーバーエラーが発生しました。' },
       { status: 500 }
     );
   }

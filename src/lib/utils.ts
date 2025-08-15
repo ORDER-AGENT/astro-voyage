@@ -76,3 +76,7 @@ export const propagateMeanAnomaly = (
   }
   return propagatedMeanAnomaly;
 };
+
+export interface FetchError extends Error {
+  code?: number;
+}

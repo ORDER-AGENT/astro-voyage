@@ -1,3 +1,5 @@
+import { FetchError } from '@/lib/utils';
+
 export interface APOD {
   date: string;
   explanation: string;
@@ -19,7 +21,7 @@ export async function getAPOD(date?: string): Promise<APOD> {
   if (!res.ok) {
     const errorData = await res.json();
     const error = new Error(errorData.msg || "Failed to fetch APOD");
-    (error as any).code = errorData.code || res.status;
+    (error as FetchError).code = errorData.code || res.status;
     throw error;
   }
   return res.json();

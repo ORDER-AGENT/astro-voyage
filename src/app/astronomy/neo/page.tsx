@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/table';
 import { format } from 'date-fns';
 import * as d3 from 'd3';
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import OrbitalViewer from '@/components/OrbitalViewer';
 import { addDays } from 'date-fns';
 import { HorizonsOrbitalElements } from '@/lib/horizons';
@@ -48,7 +48,7 @@ export default function NeoPage() {
   });
 
   // 太陽系惑星のIDと名前の定義
-  const planetIds = [
+  const planetIds = useMemo(() => [
     { id: '199', name: '水星' },    // Mercury
     { id: '399', name: '地球' },    // Earth
     { id: '299', name: '金星' },    // Venus
@@ -59,7 +59,7 @@ export default function NeoPage() {
     { id: '799', name: '天王星' },  // Uranus
     { id: '899', name: '海王星' },  // Neptune
      */
-  ];
+  ], []); // 依存配列が空なので、一度だけ計算される
 
   // PlanetDisplayData インターフェース: OrbitalViewer に渡すデータの型定義
   interface PlanetDisplayData {

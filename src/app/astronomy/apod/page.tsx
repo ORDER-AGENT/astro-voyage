@@ -15,7 +15,7 @@ export default function ApodPage() {
   const apodData = apodDataList.length > 0 ? apodDataList[0] : null;
 
   // 表示するデータは apodData のみを使用
-  const displayApodData = apodData && apodData.media_type === 'image' && !((apodError as any)?.code === 400);
+  const displayApodData = apodData && apodData.media_type === 'image' && !(apodError?.code === 400);
 
   return (
     <ContentLayout>
@@ -37,7 +37,7 @@ export default function ApodPage() {
               <p className="text-sm text-gray-600 mt-2">{apodData.explanation}</p>
               {apodData.copyright && <p className="text-xs text-gray-500 mt-1">© {apodData.copyright}</p>}
             </SimpleCard>
-          ) : apodError && !((apodError as any)?.code === 400) ? (
+          ) : apodError && !(apodError?.code === 400) ? (
             <div className="p-4 text-red-500">APODデータの読み込み中にエラーが発生しました: {apodError.message}</div>
           ) : (
             <div className="p-4 text-gray-500">表示できるAPODデータがありません。</div>

@@ -26,10 +26,10 @@ export async function GET(request: Request) {
 
     const data = await res.json();
     return NextResponse.json(data);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to fetch APOD data from NASA API:', error);
     return NextResponse.json(
-      { error_message: error.message || 'Internal Server Error' },
+      { error_message: (error instanceof Error) ? error.message : 'Internal Server Error' },
       { status: 500 }
     );
   }

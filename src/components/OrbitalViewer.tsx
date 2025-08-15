@@ -2,10 +2,10 @@
 
 import React, { useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Sphere, Line, Text, Billboard, Html } from '@react-three/drei';
+import { OrbitControls, Sphere, Line, Html } from '@react-three/drei';
 import { OrbitalData } from '@/lib/neo';
 import { HorizonsOrbitalElements } from '@/lib/horizons';
-import { toRadians, toDegrees, AU_IN_KM, propagateMeanAnomaly } from '@/lib/utils';
+import { toRadians, AU_IN_KM, propagateMeanAnomaly } from '@/lib/utils';
 import * as THREE from 'three';
 
 interface OrbitalViewerProps {
@@ -309,7 +309,7 @@ const calculateHorizonsOrbitalPoints = (elements: HorizonsOrbitalElements): THRE
  * 小惑星と惑星の軌道、現在の位置、太陽、グリッドなどを表示する。
  */
 const OrbitalScene: React.FC<OrbitalViewerProps> = ({ orbitalData, planetOrbitalData }) => {
-  const lineRef = useRef<THREE.Line | null>(null); // 将来的な軌道アニメーションなどで使用する可能性のあるref
+  //const lineRef = useRef<THREE.Line | null>(null); // 将来的な軌道アニメーションなどで使用する可能性のあるref
 
   useFrame(() => {
     // このフック内で、時間経過による軌道上の天体の移動など、フレームごとの更新処理を記述できる。

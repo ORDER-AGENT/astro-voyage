@@ -1,3 +1,5 @@
+import { FetchError } from '@/lib/utils';
+
 export interface OrbitalElement {
   label: string;
   name: string;
@@ -87,7 +89,7 @@ export async function getNeoFeed(startDate: string, endDate: string): Promise<Ne
   if (!res.ok) {
     const errorData = await res.json();
     const error = new Error(errorData.error_message || "Failed to fetch NEO feed");
-    (error as any).code = res.status;
+    (error as FetchError).code = res.status;
     throw error;
   }
   return res.json();
