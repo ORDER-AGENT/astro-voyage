@@ -434,8 +434,27 @@ const OrbitalScene: React.FC<OrbitalViewerProps> = ({ orbitalData, planetOrbital
 
           return (
             <React.Fragment key={planet.id}>
-              {/* 惑星の軌道線 */}
+              {/* 惑星の軌道とグリッド平面との垂直線 */}
               <Line points={planetPoints} color={color} lineWidth={2} />
+              {planetPoints.length > 0 && (
+                <group>
+                  {planetPoints.map((p, i) => {
+                    // 3点おきに線を描画
+                    if (i > 0 && i < planetPoints.length && i % 3 === 0) {
+                      const pOnGrid = new THREE.Vector3(p.x, -0.0005, p.z); // グリッドのY座標に合わせる
+                      return (
+                        <Line
+                          key={`planet-vertical-line-${planet.id}-${i}`}
+                          points={[p, pOnGrid]}
+                          color="#888"
+                          lineWidth={1}
+                        />
+                      );
+                    }
+                    return null;
+                  })}
+                </group>
+              )}
               {/* 惑星の現在位置スフィアとラベル */}
               {planetCurrent && (
                 <>
@@ -471,11 +490,22 @@ const OrbitalScene: React.FC<OrbitalViewerProps> = ({ orbitalData, planetOrbital
  * Three.jsのCanvasを設定し、OrbitalSceneコンポーネントを内包する。
  */
 const OrbitalViewer: React.FC<OrbitalViewerProps> = ({ orbitalData, planetOrbitalData }) => {
+  const distance = 5; // カメラと原点の距離
+  const initialCameraPosition: [number, number, number] = [
+    0,
+    distance / Math.sqrt(2), // Y座標
+    distance / Math.sqrt(2), // Z座標
+  ];
+
   return (
     <Canvas
       orthographic // 正投影カメラを使用 (遠近感なし)
-      // camera={{ position: [0, 2, 2], zoom: 120, near: 0.1, far: 10000 }} // カメラ位置、ズーム、クリッピング範囲を設定
-      camera={{ zoom: 120, near: 0.1, far: 10000 }} // position を削除し、OrbitControls に任せる
+      camera={{
+        position: initialCameraPosition, // 初期カメラ位置を斜め45度に設定
+        zoom: 120,
+        near: 0.1,
+        far: 10000,
+      }} // カメラ位置、ズーム、クリッピング範囲を設定
       className="w-full bg-black z-1" // 全幅、黒背景
       style={{ height: '400px' }} // 高さ指定
     >
