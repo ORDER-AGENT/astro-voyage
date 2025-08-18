@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { GridHelper, Vector3 } from 'three';
+import React, { useRef, useEffect } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Sphere, Line, Html } from '@react-three/drei';
 import { OrbitalData } from '@/lib/neo';
 import { HorizonsOrbitalElements } from '@/lib/horizons';
@@ -309,11 +310,31 @@ const calculateHorizonsOrbitalPoints = (elements: HorizonsOrbitalElements): THRE
  * 小惑星と惑星の軌道、現在の位置、太陽、グリッドなどを表示する。
  */
 const OrbitalScene: React.FC<OrbitalViewerProps> = ({ orbitalData, planetOrbitalData }) => {
-  //const lineRef = useRef<THREE.Line | null>(null); // 将来的な軌道アニメーションなどで使用する可能性のあるref
+  const { camera } = useThree();
+  const gridRef = useRef<THREE.GridHelper | null>(null);
 
   useFrame(() => {
-    // このフック内で、時間経過による軌道上の天体の移動など、フレームごとの更新処理を記述できる。
-    // 例: 天体の位置を微調整したり、アニメーションを制御したりする。
+    if (gridRef.current && camera) {
+      // カメラのズームに基づいてグリッドのスケールを動的に調整
+      // OrthographicCameraの場合、ズームが視覚的なサイズに直接影響するため、
+      // グリッドのスケールをズームの逆数に比例させることで、グリッド幅を一定に保つように見せます。
+      // 調整係数 '200' は、グリッドの視覚的な密度を調整するためのものです。
+      // この値を変更することで、グリッドの線の間隔が広くなったり狭くなったりします。
+      const scale = (1 / camera.zoom) * 200; // 調整係数を 200 に変更
+
+      gridRef.current.scale.set(scale, scale, scale);
+
+      // グリッドの色を白にセット
+      gridRef.current.material.color.set('white'); // '#333' から 'white' に変更
+
+      // デバッグ用にズームとスケールをコンソールに出力
+      /*
+      console.log(
+        'Camera zoom:', camera.zoom,
+        'Grid scale (based on zoom):', scale.toFixed(4)
+      );
+      */
+    }
   });
 
   // 小惑星の軌道点を計算し、Three.jsのBufferGeometryに変換
@@ -335,7 +356,8 @@ const OrbitalScene: React.FC<OrbitalViewerProps> = ({ orbitalData, planetOrbital
       <pointLight position={[0, 0, 0]} intensity={3} />
 
       {/* グリッドヘルパー: 地球の軌道面（XZ平面）に平行なグリッドを表示し、スケール感を視覚的に提供 */}
-      <gridHelper args={[20, 200, '#333', '#222']} position={[0, -0.0005, 0]} />
+      {/* gridHelperSize と gridHelperDivisions を固定値に戻し、scaleはuseFrameで設定します */}
+      <gridHelper ref={gridRef} args={[60, 200, '#333', '#222']} position={[0, -0.0005, 0]} />
 
       {/* 太陽の球体とラベル */}
       <Sphere args={[0.1, 32, 32]} position={[0, 0, 0]}>
@@ -353,6 +375,26 @@ const OrbitalScene: React.FC<OrbitalViewerProps> = ({ orbitalData, planetOrbital
       {orbitalData && (
         <Line points={asteroidPoints} color="white" lineWidth={2} />
       )}
+      {/* 小惑星の軌道とグリッド平面との垂直線 */}
+      {asteroidPoints.length > 0 && (
+        <group>
+          {asteroidPoints.map((p, i) => {
+            // 3点おき（約3.3倍の密度）に線を描画し、軌道と平面のズレを視覚化
+            if (i > 0 && i < asteroidPoints.length && i % 3 === 0) {
+              const pOnGrid = new THREE.Vector3(p.x, -0.0005, p.z); // グリッドのY座標に合わせる
+              return (
+                <Line
+                  key={`vertical-line-${i}`}
+                  points={[p, pOnGrid]}
+                  color="#888" // 少し明るいグレーに変更
+                  lineWidth={1}   // 線を少し太くする
+                />
+              );
+            }
+            return null;
+          })}
+        </group>
+      )}
       {/* 小惑星の現在位置スフィアとラベル: asteroidCurrentが存在する場合にのみ描画 */}
       {asteroidCurrent && (
         <>
@@ -361,7 +403,7 @@ const OrbitalScene: React.FC<OrbitalViewerProps> = ({ orbitalData, planetOrbital
           </Sphere>
           <Html
             position={[asteroidCurrent.x, asteroidCurrent.y, asteroidCurrent.z]}
-            className="pointer-events-none"
+            className="pointer-events-none z-2"
           >
             <div className="translate-x-2 -translate-y-2">
               <div className="whitespace-nowrap text-[12px] font-bold leading-none text-cyan-300 [writing-mode:horizontal-tb] [text-orientation:mixed] [text-shadow:0_0_3px_rgba(0,0,0,0.9)]">
@@ -402,7 +444,7 @@ const OrbitalScene: React.FC<OrbitalViewerProps> = ({ orbitalData, planetOrbital
                   </Sphere>
                   <Html
                     position={[planetCurrent.x, planetCurrent.y, planetCurrent.z]}
-                    className="pointer-events-none"
+                    className="pointer-events-none z-2"
                   >
                     <div className="translate-x-2 -translate-y-2">
                       <div
@@ -432,8 +474,9 @@ const OrbitalViewer: React.FC<OrbitalViewerProps> = ({ orbitalData, planetOrbita
   return (
     <Canvas
       orthographic // 正投影カメラを使用 (遠近感なし)
-      camera={{ position: [0, 2, 2], zoom: 120, near: 0.1, far: 10000 }} // カメラ位置、ズーム、クリッピング範囲を設定
-      className="w-full bg-black" // 全幅、黒背景
+      // camera={{ position: [0, 2, 2], zoom: 120, near: 0.1, far: 10000 }} // カメラ位置、ズーム、クリッピング範囲を設定
+      camera={{ zoom: 120, near: 0.1, far: 10000 }} // position を削除し、OrbitControls に任せる
+      className="w-full bg-black z-1" // 全幅、黒背景
       style={{ height: '400px' }} // 高さ指定
     >
       {/* 3Dシーンのコンポーネントを配置 */}
