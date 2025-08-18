@@ -17,7 +17,7 @@ export default function AppHeader({
   const shouldShowContent = headerLeftContent || headerRightContent; // SidebarTrigger以外のコンテンツの表示判定
 
   return (
-    <div className="flex items-center justify-between p-4 bg-[#f5f7fd] border-b border-gray-200">
+    <div className="flex items-center justify-between p-4 bg-[#f5f7fd] border-b border-gray-200 bg-white/80 select-none w-full backdrop-blur-xl">
       <div className="flex-1 flex justify-start items-center">
         <SidebarTrigger className="mr-4" /> {/* 無条件で表示 */}
         {shouldShowContent && headerLeftContent} {/* 条件付きで表示 */}
