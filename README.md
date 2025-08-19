@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## 起動方法
 
-## Getting Started
 
-First, run the development server:
+まず、開発サーバーを起動します:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+ブラウザで [http://localhost:3000](http://localhost:3000) を開き、結果を確認してください。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## プロジェクトの作成
 
-## Learn More
+このプロジェクトは、以下のコマンドで作成されました。
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npx create-next-app@latest astro-voyage
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## プロジェクト概要
 
-## Deploy on Vercel
+このプロジェクトは、NASA API から取得したデータ表示を行うサンプルアプリケーションです。
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+#### 地球近傍天体 軌道データ
+![地球近傍天体 軌道データ](docs/neo_orbit.png)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 環境変数
+
+本プロジェクトを実行するには、ルートディレクトリに `.env.local` ファイルを作成し、以下の環境変数を設定する必要があります。
+
+
+```
+NASA_API_KEY=取得したAPIキー
+```
+
+
+NASA API キーは以下から取得できます。
+```
+https://api.nasa.gov/
+```
+
+### 導入ライブラリ
+
+導入ライブラについては、[導入ライブラリ.md](docs/導入ライブラリ.md) を参照してください。
+
+### レスポンシブなサイドバー
+
+このサイドバーメニューは、画面の幅に応じて表示が切り替わります。
+
+#### デスクトップビュー (幅 768px 以上)
+
+#### モバイルビュー (幅 768px 未満)
+
+モバイル画面では、サイドバーはデフォルトで非表示となり、メニューボタンをクリックするとオーバーレイメニューが表示されます。
+
