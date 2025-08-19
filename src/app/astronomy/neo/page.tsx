@@ -21,6 +21,12 @@ import { useRef, useEffect, useState, useMemo } from 'react';
 import OrbitalViewer from '@/components/OrbitalViewer';
 import { addDays } from 'date-fns';
 import { HorizonsOrbitalElements } from '@/lib/horizons';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 
 // NEO (Near Earth Object) ページコンポーネント
 export default function NeoPage() {
@@ -272,39 +278,47 @@ export default function NeoPage() {
 
                 {/* 軌道データ表示エリア */}
                 <div className="mt-4">
-                  <h3 className="text-md font-bold mb-2">軌道データ</h3>
-                  {orbitalIsLoading ? (
-                    <Skeleton className="w-full h-48 mt-4" />
-                  ) : orbitalError ? (
-                    <div className="p-4 text-red-500">軌道データの読み込み中にエラーが発生しました: {orbitalError.message}</div>
-                  ) : orbitalData ? (
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>要素名</TableHead>
-                            <TableHead>値</TableHead>
-                            <TableHead>単位</TableHead>
-                            <TableHead>説明</TableHead>
-                            <TableHead>シグマ</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {orbitalData.elements.map((element) => (
-                            <TableRow key={element.name}>
-                              <TableCell className="font-medium">{element.title}</TableCell>
-                              <TableCell>{element.value}</TableCell>
-                              <TableCell>{element.units || 'N/A'}</TableCell>
-                              <TableCell>{element.label}</TableCell>
-                              <TableCell>{element.sigma}</TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  ) : (
-                    <div className="p-4 text-gray-500">軌道データがありません。</div>
-                  )}
+                  <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="item-1">
+                      <AccordionTrigger>
+                        <h3 className="text-md font-bold">軌道データ</h3>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        {orbitalIsLoading ? (
+                          <Skeleton className="w-full h-48 mt-4" />
+                        ) : orbitalError ? (
+                          <div className="p-4 text-red-500">軌道データの読み込み中にエラーが発生しました: {orbitalError.message}</div>
+                        ) : orbitalData ? (
+                          <div className="overflow-x-auto">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>要素名</TableHead>
+                                  <TableHead>値</TableHead>
+                                  <TableHead>単位</TableHead>
+                                  <TableHead>説明</TableHead>
+                                  <TableHead>シグマ</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {orbitalData.elements.map((element) => (
+                                  <TableRow key={element.name}>
+                                    <TableCell className="font-medium">{element.title}</TableCell>
+                                    <TableCell>{element.value}</TableCell>
+                                    <TableCell>{element.units || 'N/A'}</TableCell>
+                                    <TableCell>{element.label}</TableCell>
+                                    <TableCell>{element.sigma}</TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        ) : (
+                          <div className="p-4 text-gray-500">軌道データがありません。</div>
+                        )}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 </div>
 
                 {/* 軌道ビューワーの表示 */}
