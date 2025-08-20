@@ -36,8 +36,12 @@ export const useMarsRoverPhotos = (earthDate: string, page: number = 1) => {
         setPhotos(data.photos);
         setTotalPhotos(data.total_photos); // APIのレスポンスに応じて調整
         setCurrentPage(page);
-      } catch (err: any) {
-        setError(err);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err);
+        } else {
+          setError(new Error("不明なエラーが発生しました。"));
+        }
       } finally {
         setIsLoading(false);
       }
