@@ -120,3 +120,22 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* 新しいアニメーションクラス */
+.card-lazy-load-wrapper {
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+/* アニメーションを適用し、最終状態に移行するためのクラス */
+.card-lazy-load-wrapper.is-animated {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 最初から画面内にあり、アニメーションしない場合の最終状態 */
+.card-no-animation {
+  opacity: 1;
+  transform: translateY(0);
+}

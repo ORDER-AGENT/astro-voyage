@@ -26,8 +26,9 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  SelectGroup, // Add this import
-} from "@/components/ui/select" // Add this import for Select component
+  SelectGroup,
+} from "@/components/ui/select"
+import AnimatedLazyImageCard from '@/components/card/AnimatedLazyImageCard';
 
 
 export default function MarsRoverPage() {
@@ -57,6 +58,11 @@ export default function MarsRoverPage() {
   const handlePhotosPerPageChange = (value: string) => {
     setPhotosPerPage(Number(value));
     setCurrentPage(1); // 表示件数が変わったら1ページ目に戻る
+  };
+
+  const handleDateChange = (date: Date | undefined) => {
+    setSelectedDate(date);
+    setCurrentPage(1); // 日付が変わったら1ページ目に戻る
   };
 
   // ページネーションの表示項目をレンダリングする関数
@@ -140,7 +146,7 @@ export default function MarsRoverPage() {
               <Calendar
                 mode="single"
                 selected={selectedDate}
-                onSelect={setSelectedDate}
+                onSelect={handleDateChange}
                 initialFocus
               />
             </PopoverContent>
@@ -149,7 +155,7 @@ export default function MarsRoverPage() {
           {/* 1ページあたりの表示数選択ドロップダウン */}
           <div className="w-full sm:w-auto">
             <Select onValueChange={handlePhotosPerPageChange} defaultValue={photosPerPage.toString()}>
-              <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectTrigger className="bg-white w-full sm:w-[180px]">
                 <SelectValue placeholder="表示数を選択" />
               </SelectTrigger>
               <SelectContent>
@@ -182,9 +188,14 @@ export default function MarsRoverPage() {
           ) : currentPhotos.length > 0 ? ( // スライスされた写真を表示
             <>
               {currentPhotos.map((photo) => (
-                <SimpleCard key={photo.id} title={`Rover: ${photo.rover.name} - ${photo.earth_date}`}>
-                  <img src={photo.img_src} alt={`Mars Rover Photo - ${photo.id}`} className="w-full h-auto rounded-md mt-4" />
-                </SimpleCard>
+                <AnimatedLazyImageCard
+                  key={photo.id}
+                  title={`Rover: ${photo.rover.name} - ${photo.earth_date}`}
+                  imageSrc={photo.img_src} // 画像のsrcを渡す
+                  imageAlt={`Mars Rover Photo - ${photo.id}`} // 画像のaltを渡す
+                >
+                  <></>
+                </AnimatedLazyImageCard>
               ))}
             </>
           ) : (
@@ -195,9 +206,15 @@ export default function MarsRoverPage() {
         { totalPages > 0 && ( // 総ページ数が0より大きい場合のみページネーションを表示
           <Pagination className="mt-4">
             <PaginationContent>
-              <PaginationPrevious onClick={() => handlePageChange(currentPage - 1)} className={currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} />
+              <PaginationPrevious
+                onClick={currentPage === 1 ? undefined : () => handlePageChange(currentPage - 1)}
+                className={currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+              />
               {renderPaginationItems()}
-              <PaginationNext onClick={() => handlePageChange(currentPage + 1)} className={currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} />
+              <PaginationNext
+                onClick={currentPage === totalPages ? undefined : () => handlePageChange(currentPage + 1)}
+                className={currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+              />
             </PaginationContent>
           </Pagination>
         )}
