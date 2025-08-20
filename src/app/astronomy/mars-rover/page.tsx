@@ -20,34 +20,51 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  SelectGroup, // Add this import
+} from "@/components/ui/select" // Add this import for Select component
+
 
 export default function MarsRoverPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date()); // 選択された日付を管理するstateを追加
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [photosPerPage, setPhotosPerPage] = useState(20); // 1ページあたりの写真数
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
   const formattedDate = oneWeekAgo.toISOString().split('T')[0]; // YYYY-MM-DD形式にフォーマット
-  const { photos, isLoading, error, totalPhotos, currentPage: fetchedCurrentPage } = useMarsRoverPhotos(
-    selectedDate ? format(selectedDate, "yyyy-MM-dd") : formattedDate, // 選択された日付があればそれを使用、なければ1週間前の日付を使用
-    currentPage
+
+  const { photos, isLoading, error, totalPhotos } = useMarsRoverPhotos( // currentPageを削除
+    selectedDate ? format(selectedDate, "yyyy-MM-dd") : formattedDate
   );
 
-  // ページ数を計算する（APIがtotal_photosを提供しない場合は仮の計算）
-  const totalPages = totalPhotos ? Math.ceil(totalPhotos / 25) : 50; // 1ページあたり25枚
+  // ページ数を計算
+  const totalPages = totalPhotos ? Math.ceil(totalPhotos / photosPerPage) : 0;
 
-  console.log('totalPhotos:', totalPhotos);
+  // 現在のページに表示する写真の範囲を計算
+  const indexOfLastPhoto = currentPage * photosPerPage;
+  const indexOfFirstPhoto = indexOfLastPhoto - photosPerPage;
+  const currentPhotos = photos.slice(indexOfFirstPhoto, indexOfLastPhoto);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
+  const handlePhotosPerPageChange = (value: string) => {
+    setPhotosPerPage(Number(value));
+    setCurrentPage(1); // 表示件数が変わったら1ページ目に戻る
+  };
+
   // ページネーションの表示項目をレンダリングする関数
   const renderPaginationItems = () => {
     const pageItems = [];
-    const maxPagesToShow = 7; // 表示する最大のページ数（例: 1 2 3 ... 98 99 100）
+    const maxPagesToShow = 7;
 
     if (totalPages <= maxPagesToShow) {
-      // 総ページ数が少ない場合は全て表示
       for (let i = 1; i <= totalPages; i++) {
         pageItems.push(
           <PaginationItem key={i}>
@@ -103,16 +120,15 @@ export default function MarsRoverPage() {
       <div className="container mx-auto p-4">
         <p className="text-lg mb-4">
           NASAの火星探査機「Curiosity」が撮影した火星の写真を閲覧できます。
-          （ページ表示は仮です）
         </p>
-        <div className="mb-4">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-2 sm:space-y-0 sm:space-x-4">
           {/* 日付選択のポップオーバー */}
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant={"outline"}
                 className={cn(
-                  "w-[240px] justify-start text-left font-normal",
+                  "w-full sm:w-[240px] justify-start text-left font-normal",
                   !selectedDate && "text-muted-foreground"
                 )}
               >
@@ -129,11 +145,29 @@ export default function MarsRoverPage() {
               />
             </PopoverContent>
           </Popover>
+
+          {/* 1ページあたりの表示数選択ドロップダウン */}
+          <div className="w-full sm:w-auto">
+            <Select onValueChange={handlePhotosPerPageChange} defaultValue={photosPerPage.toString()}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="表示数を選択" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="10">10枚表示</SelectItem>
+                  <SelectItem value="20">20枚表示</SelectItem>
+                  <SelectItem value="50">50枚表示</SelectItem>
+                  <SelectItem value="100">100枚表示</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {isLoading ? (
             <>
-              {[...Array(4)].map((_, index) => (
+              {[...Array(photosPerPage)].map((_, index) => ( // スケルトン表示数もphotosPerPageに合わせる
                 <SimpleCard key={index} title="">
                   <Skeleton className="w-full h-48 mt-4" />
                   <Skeleton className="w-3/4 h-4 mt-2" />
@@ -145,9 +179,9 @@ export default function MarsRoverPage() {
             <div className="p-4 text-red-500">
               Mars Roverデータの読み込み中にエラーが発生しました: {error?.message}
             </div>
-          ) : photos.length > 0 ? (
+          ) : currentPhotos.length > 0 ? ( // スライスされた写真を表示
             <>
-              {photos.map((photo) => (
+              {currentPhotos.map((photo) => (
                 <SimpleCard key={photo.id} title={`Rover: ${photo.rover.name} - ${photo.earth_date}`}>
                   <img src={photo.img_src} alt={`Mars Rover Photo - ${photo.id}`} className="w-full h-auto rounded-md mt-4" />
                 </SimpleCard>
@@ -158,13 +192,15 @@ export default function MarsRoverPage() {
           )}
         </div>
         {/* ページネーションUI */}
-        <Pagination className="mt-4">
-          <PaginationContent>
-            <PaginationPrevious onClick={() => handlePageChange(currentPage - 1)} className={currentPage === 1 ? 'cursor-not-allowed opacity-50' : ''} />
-            {renderPaginationItems()} {/* ページネーション項目をレンダリング */}
-            <PaginationNext onClick={() => handlePageChange(currentPage + 1)} className={currentPage === totalPages ? 'cursor-not-allowed opacity-50' : ''} />
-          </PaginationContent>
-        </Pagination>
+        { totalPages > 0 && ( // 総ページ数が0より大きい場合のみページネーションを表示
+          <Pagination className="mt-4">
+            <PaginationContent>
+              <PaginationPrevious onClick={() => handlePageChange(currentPage - 1)} className={currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} />
+              {renderPaginationItems()}
+              <PaginationNext onClick={() => handlePageChange(currentPage + 1)} className={currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} />
+            </PaginationContent>
+          </Pagination>
+        )}
       </div>
     </ContentLayout>
   );
