@@ -74,7 +74,7 @@ export default function MarsRoverPage() {
       for (let i = 1; i <= totalPages; i++) {
         pageItems.push(
           <PaginationItem key={i}>
-            <PaginationLink isActive={i === currentPage} onClick={() => handlePageChange(i)} className="cursor-pointer">
+            <PaginationLink isActive={i === currentPage} onClick={() => handlePageChange(i)}>
               {i}
             </PaginationLink>
           </PaginationItem>
@@ -110,7 +110,7 @@ export default function MarsRoverPage() {
         // ページリンクを追加
         pageItems.push(
           <PaginationItem key={page}>
-            <PaginationLink isActive={page === currentPage} onClick={() => handlePageChange(page)} className="cursor-pointer">
+            <PaginationLink isActive={page === currentPage} onClick={() => handlePageChange(page)}>
               {page}
             </PaginationLink>
           </PaginationItem>
@@ -142,7 +142,7 @@ export default function MarsRoverPage() {
               mode="single"
               selected={selectedDate}
               onSelect={handleDateChange}
-              initialFocus
+              captionLayout="dropdown"
             />
           </PopoverContent>
         </Popover>
@@ -212,12 +212,12 @@ export default function MarsRoverPage() {
             <PaginationContent>
               <PaginationPrevious
                 onClick={currentPage === 1 ? undefined : () => handlePageChange(currentPage - 1)}
-                className={currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+                className={currentPage === 1 ? 'cursor-not-allowed opacity-50' : ''}
               />
               {renderPaginationItems()}
               <PaginationNext
                 onClick={currentPage === totalPages ? undefined : () => handlePageChange(currentPage + 1)}
-                className={currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+                className={currentPage === totalPages ? 'cursor-not-allowed opacity-50' : ''}
               />
             </PaginationContent>
           </Pagination>
