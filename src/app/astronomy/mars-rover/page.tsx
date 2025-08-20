@@ -13,22 +13,22 @@ import {
   PaginationPrevious,
   PaginationNext,
   PaginationEllipsis,
-} from '@/components/ui/pagination'; // Paginationコンポーネントをインポート
-import { Calendar } from "@/components/ui/calendar" // 追加
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover" // 追加
-import { Button } from "@/components/ui/button" // 追加
-import { cn } from "@/lib/utils" // 追加
-import { format } from "date-fns" // 追加
-import { CalendarIcon } from "lucide-react" // 追加
+} from '@/components/ui/pagination';
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+import { format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
 
 export default function MarsRoverPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date()); // 追加
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date()); // 選択された日付を管理するstateを追加
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
   const formattedDate = oneWeekAgo.toISOString().split('T')[0]; // YYYY-MM-DD形式にフォーマット
   const { photos, isLoading, error, totalPhotos, currentPage: fetchedCurrentPage } = useMarsRoverPhotos(
-    selectedDate ? format(selectedDate, "yyyy-MM-dd") : formattedDate, // 変更
+    selectedDate ? format(selectedDate, "yyyy-MM-dd") : formattedDate, // 選択された日付があればそれを使用、なければ1週間前の日付を使用
     currentPage
   );
 
@@ -41,6 +41,7 @@ export default function MarsRoverPage() {
     setCurrentPage(page);
   };
 
+  // ページネーションの表示項目をレンダリングする関数
   const renderPaginationItems = () => {
     const pageItems = [];
     const maxPagesToShow = 7; // 表示する最大のページ数（例: 1 2 3 ... 98 99 100）
@@ -58,21 +59,24 @@ export default function MarsRoverPage() {
       }
     } else {
       // 総ページ数が多い場合は省略表示
-      const startPages = [1, 2, 3];
-      const endPages = [totalPages - 2, totalPages - 1, totalPages];
+      const startPages = [1, 2, 3]; // 常に表示する最初のページ
+      const endPages = [totalPages - 2, totalPages - 1, totalPages]; // 常に表示する最後のページ
 
       // 現在のページの前後のページ
       const middlePages = [];
       for (let i = currentPage - 2; i <= currentPage + 2; i++) {
+        // 中間のページが表示範囲内かつ最初のページと最後のページと重複しないように調整
         if (i > 3 && i < totalPages - 2) {
           middlePages.push(i);
         }
       }
 
+      // 全ての表示対象ページを結合し、重複を排除してソート
       const allPages = [...new Set([...startPages, ...middlePages, ...endPages])].sort((a, b) => a - b);
 
       let lastPage = 0;
       allPages.forEach((page) => {
+        // ページ間にギャップがある場合、省略記号を挿入
         if (page - lastPage > 1) {
           pageItems.push(
             <PaginationItem key={`ellipsis-${lastPage}`}>
@@ -80,6 +84,7 @@ export default function MarsRoverPage() {
             </PaginationItem>
           );
         }
+        // ページリンクを追加
         pageItems.push(
           <PaginationItem key={page}>
             <PaginationLink isActive={page === currentPage} onClick={() => handlePageChange(page)} className="cursor-pointer">
@@ -87,7 +92,7 @@ export default function MarsRoverPage() {
             </PaginationLink>
           </PaginationItem>
         );
-        lastPage = page;
+        lastPage = page; // 最後の表示ページを更新
       });
     }
     return pageItems;
@@ -101,7 +106,7 @@ export default function MarsRoverPage() {
           （ページ表示は仮です）
         </p>
         <div className="mb-4">
-          {/* 追加開始 */}
+          {/* 日付選択のポップオーバー */}
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -124,7 +129,6 @@ export default function MarsRoverPage() {
               />
             </PopoverContent>
           </Popover>
-          {/* 追加終了 */}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {isLoading ? (
@@ -157,7 +161,7 @@ export default function MarsRoverPage() {
         <Pagination className="mt-4">
           <PaginationContent>
             <PaginationPrevious onClick={() => handlePageChange(currentPage - 1)} className={currentPage === 1 ? 'cursor-not-allowed opacity-50' : ''} />
-            {renderPaginationItems()}
+            {renderPaginationItems()} {/* ページネーション項目をレンダリング */}
             <PaginationNext onClick={() => handlePageChange(currentPage + 1)} className={currentPage === totalPages ? 'cursor-not-allowed opacity-50' : ''} />
           </PaginationContent>
         </Pagination>
