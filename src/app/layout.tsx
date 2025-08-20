@@ -32,7 +32,7 @@ export default function RootLayout({
       >
         <RootClientLayout>
           <SidebarLayout>
-            <div className="flex flex-col h-screen w-full flex-1 min-w-0"> {/* AppHeaderとContentLayoutを縦に並べるためのコンテナ */}
+            <div className="flex flex-col w-full flex-1 min-w-0"> {/* AppHeaderとContentLayoutを縦に並べるためのコンテナ */}
               <div className="sticky top-0 z-50">
                 <AppHeader /> {/* グローバルヘッダー */}
               </div>

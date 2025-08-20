@@ -122,36 +122,33 @@ export default function MarsRoverPage() {
   };
 
   return (
-    <ContentLayout>
-      <div className="container mx-auto p-4">
-        <p className="text-lg mb-4">
-          NASAの火星探査機「Curiosity」が撮影した火星の写真を閲覧できます。
-        </p>
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-2 sm:space-y-0 sm:space-x-4">
-          {/* 日付選択のポップオーバー */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className={cn(
-                  "w-full sm:w-[240px] justify-start text-left font-normal",
-                  !selectedDate && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {selectedDate ? format(selectedDate, "PPP") : <span>日付を選択</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={handleDateChange}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-
+    <ContentLayout
+      headerLeftContent={
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant={"outline"}
+              className={cn(
+                "w-full sm:w-[240px] justify-start text-left font-normal",
+                !selectedDate && "text-muted-foreground"
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {selectedDate ? format(selectedDate, "PPP") : <span>日付を選択</span>}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={handleDateChange}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
+      }
+      headerRightContent={
+        <div className="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0 sm:space-x-4">
           {/* 1ページあたりの表示数選択ドロップダウン */}
           <div className="w-full sm:w-auto">
             <Select onValueChange={handlePhotosPerPageChange} defaultValue={photosPerPage.toString()}>
@@ -169,6 +166,13 @@ export default function MarsRoverPage() {
             </Select>
           </div>
         </div>
+      }
+      isHeaderFixed={true} // ヘッダーを固定表示にする
+    >
+      <div className="container mx-auto p-4">
+        <p className="text-lg mb-4">
+          NASAの火星探査機「Curiosity」が撮影した火星の写真を閲覧できます。
+        </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {isLoading ? (
