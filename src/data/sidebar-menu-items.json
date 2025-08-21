@@ -59,5 +59,11 @@
         "href": "/under-construction"
       }
     ]
+  },
+  {
+    "title": "GitHub",
+    "icon": "FaGithub",
+    "href": "https://github.com/ORDER-AGENT/astro-voyage",
+    "isExternal": true
   }
 ]
