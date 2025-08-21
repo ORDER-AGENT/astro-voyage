@@ -28,6 +28,7 @@ import * as LucideIcons from "lucide-react";
 type SubMenuItem = {
   title: string;
   href: string;
+  icon?: keyof typeof LucideIcons;
 };
 
 type MenuItem = {
@@ -92,13 +93,19 @@ export default function SidebarLayout({
 
                       <CollapsibleContent>
                         <SidebarMenuSub>
-                          {item.submenu!.map((subItem, subIndex) => (
-                            <SidebarMenuSubItem key={subIndex} className="whitespace-nowrap">
-                              <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
-                                <Link href={subItem.href}>{subItem.title}</Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
+                          {item.submenu!.map((subItem, subIndex) => {
+                            const SubIconComponent = subItem.icon ? (LucideIcons[subItem.icon] as LucideIcon) : null;
+                            return (
+                              <SidebarMenuSubItem key={subIndex} className="whitespace-nowrap">
+                                <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
+                                  <Link href={subItem.href}>
+                                    {SubIconComponent && <SubIconComponent />}
+                                    <span>{subItem.title}</span>
+                                  </Link>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            )
+                          })}
                         </SidebarMenuSub>
                       </CollapsibleContent>
                     </SidebarMenuItem>

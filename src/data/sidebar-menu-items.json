@@ -1,8 +1,9 @@
 [
   {
-    "title": "ダッシュボード",
-    "href": "/dashboard",
-    "icon": "LayoutGrid"
+    "title": "🚧ダッシュボード",
+    "icon": "LayoutGrid",
+    "_href": "/dashboard",
+    "href": "/under-construction"
   },
   {
     "title": "天文学",
@@ -27,12 +28,17 @@
     "icon": "Earth",
     "submenu": [
       {
-        "title": "自然災害データ",
-        "href": "/earth-science/natural-disasters"
+        "title": "🚧自然災害データ",
+        "_icon": "Construction",
+        "_href": "/earth-science/natural-disasters",
+        "href": "/under-construction"
       },
       {
-        "title": "衛星画像",
-        "href": "/earth-science/satellite-images"
+        "title": "🚧衛星画像",
+        "_icon": "Construction",
+        "_href": "/earth-science/satellite-images",
+        "href": "/under-construction"
+
       }
     ]
   },
@@ -41,12 +47,16 @@
     "icon": "Sun",
     "submenu": [
       {
-        "title": "太陽フレア",
-        "href": "/solar-physics/solar-flares"
+        "title": "🚧太陽フレア",
+        "_icon": "Construction",
+        "_href": "/solar-physics/solar-flares",
+        "href": "/under-construction"
       },
       {
-        "title": "CME (Coronal Mass Ejection)",
-        "href": "/solar-physics/cme"
+        "title": "🚧CME (Coronal Mass Ejection)",
+        "_icon": "Construction",
+        "_href": "/solar-physics/cme",
+        "href": "/under-construction"
       }
     ]
   }
