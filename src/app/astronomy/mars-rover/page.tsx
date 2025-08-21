@@ -33,10 +33,10 @@ import AnimatedLazyImageCard from '@/components/card/AnimatedLazyImageCard';
 
 export default function MarsRoverPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [photosPerPage, setPhotosPerPage] = useState(20); // 1ページあたりの写真数
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(oneWeekAgo);
+  const [photosPerPage, setPhotosPerPage] = useState(20); // 1ページあたりの写真数
   const formattedDate = oneWeekAgo.toISOString().split('T')[0]; // YYYY-MM-DD形式にフォーマット
 
   const { photos, isLoading, error, totalPhotos } = useMarsRoverPhotos( // currentPageを削除
